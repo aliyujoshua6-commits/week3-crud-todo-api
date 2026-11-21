@@ -4,17 +4,40 @@ app.use(express.json()); // Parse JSON bodies
 
 let todos = [
   { id: 1, task: 'Learn Node.js', completed: false },
-  { id: 2, task: 'Build CRUD API', completed: false },
+  { id: 2, task: 'Build Todo API', completed: false },
 ];
 
-// GET All – Read
+// GET All 
 app.get('/todos', (req, res) => {
   res.status(200).json(todos); // Send array as JSON
 });
 
+// GET ACTIVE
+app.get('/todos/active', (req, res) => {
+  const actives = todos.filter((t) => !t.completed);
+  res.status(200).json(actives); // Custom Read!
+});
+
+// GET COMPLETED
+app.get('/todos/completed', (req, res) => {
+  const completed = todos.filter((t) => t.completed);
+  res.status(200).json(completed); // Custom Read!
+});
+
+// GET SINGLE
+app.get('/todos/:id', (req, res) => {
+  const todo = todos.find((t) => t.id === parseInt(req.params.id));
+  if (!todo) return res.status(404).json({ message: 'Todo not found' });
+  res.status(200).json(todo);
+});
+
 // POST New – Create
 app.post('/todos', (req, res) => {
-  const newTodo = { id: todos.length + 1, ...req.body }; // Auto-ID
+  const { task } = req.body;
+  if ( !task || task.trim() === '' ) {
+    return res.status(400).json({ error: 'Task is required' });
+  }
+  const newTodo = { id: todos.length + 1, task, completed: false };
   todos.push(newTodo);
   res.status(201).json(newTodo); // Echo back
 });
@@ -46,5 +69,5 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Server error!' });
 });
 
-const PORT = 3002;
+const PORT = 4000;
 app.listen(PORT, () => console.log(`Server on port ${PORT}`));
